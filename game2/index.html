@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>חדר הבריחה של פרופסור פארקס</title>
+    <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@300;400;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #00f2ff;
+            --secondary: #7000ff;
+            --expert: #ff00ff;
+            --bg: #0a0b1e;
+            --card-bg: rgba(255, 255, 255, 0.05);
+            --success: #00ff88;
+            --error: #ff4d4d;
+        }
+
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        body {
+            font-family: 'Assistant', sans-serif;
+            background: var(--bg);
+            color: white;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            height: -webkit-fill-available;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 95%;
+            max-width: 600px;
+            height: 90vh;
+            background: var(--card-bg);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 242, 255, 0.2);
+            border-radius: 20px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            position: relative;
+            box-shadow: 0 0 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .credit {
+            font-size: 0.85em;
+            text-align: center;
+            color: rgba(255, 255, 255, 0.6);
+            margin-top: 5px;
+            font-style: italic;
+        }
+
+        h1 {
+            font-family: 'Orbitron', sans-serif;
+            text-align: center;
+            color: var(--primary);
+            font-size: 1.4em;
+            margin: 10px 0;
+            text-shadow: 0 0 10px rgba(0, 242, 255, 0.5);
+        }
+
+        h2 {
+            font-family: 'Assistant', sans-serif;
+            text-align: center;
+            color: var(--primary);
+            font-weight: 700;
+            margin: 10px 0;
+        }
+
+        .stats-bar {
+            display: flex;
+            justify-content: space-between;
+            font-weight: bold;
+            font-size: 1em;
+            margin-bottom: 10px;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: #1a1b3a;
+            border-radius: 4px;
+            margin-bottom: 15px;
+            overflow: hidden;
+        }
+
+        #progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--secondary), var(--primary));
+            width: 0%;
+            transition: width 0.5s ease;
+        }
+
+        .screen {
+            display: none;
+            flex-direction: column;
+            height: 100%;
+            overflow-y: auto;
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        .active {
+            display: flex;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn {
+            background: transparent;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            padding: 12px 20px;
+            font-size: 1.1em;
+            cursor: pointer;
+            border-radius: 30px;
+            transition: all 0.3s;
+            font-family: 'Assistant', sans-serif;
+            font-weight: bold;
+            width: 100%;
+            max-width: 250px;
+            margin: 8px auto;
+            text-decoration: none;
+            text-align: center;
+        }
+
+        .btn:hover {
+            background: var(--primary);
+            color: var(--bg);
+        }
+
+        .input-field {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--primary);
+            color: white;
+            padding: 12px;
+            border-radius: 10px;
+            width: 100%;
+            max-width: 220px;
+            display: block;
+            margin: 15px auto;
+            text-align: center;
+            font-size: 1.2em;
+        }
+
+        .question-box {
+            background: rgba(0,0,0,0.4);
+            padding: 15px;
+            border-radius: 15px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+            font-size: 1.1em;
+            border-right: 4px solid var(--primary);
+        }
+
+        .digit-reveal {
+            font-size: 6em;
+            color: var(--success);
+            text-align: center;
+            font-family: 'Assistant', sans-serif;
+            font-weight: 800;
+            text-shadow: 0 0 25px var(--success);
+            margin: 10px 0;
+        }
+
+        .lock-container {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin: 15px 0;
+            direction: ltr;
+        }
+
+        .lock-input {
+            width: 40px;
+            height: 50px;
+            font-size: 1.5em;
+            text-align: center;
+            background: #1a1b3a;
+            border: 2px solid var(--primary);
+            color: var(--primary);
+            border-radius: 8px;
+            font-family: 'Assistant', sans-serif;
+            font-weight: 700;
+        }
+
+        .feedback {
+            text-align: center;
+            font-weight: bold;
+            margin: 5px 0;
+            min-height: 20px;
+        }
+
+        .restart-btn {
+            border-color: var(--success);
+            color: var(--success);
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="stats-bar">
+        <div>ניקוד: <span id="score-display">0</span></div>
+        <div>חדר: <span id="room-display">1</span>/6</div>
+    </div>
+    
+    <div class="progress-container">
+        <div id="progress-fill"></div>
+    </div>
+
+    <!-- Welcome Screen -->
+    <div id="screen-welcome" class="screen active">
+        <h1>המעבדה של פרופסור פארקס</h1>
+        <p style="text-align:center">פתרו 6 חידות אחוזים כדי לפרוץ את המעבדה.</p>
+        <button class="btn" onclick="startGame('easy')">עוזר מעבדה (קל)</button>
+        <button class="btn" onclick="startGame('hard')" style="border-color: var(--secondary); color: var(--secondary);">חוקר בכיר (בינוני)</button>
+        <button class="btn" onclick="startGame('expert')" style="border-color: var(--expert); color: var(--expert);">מנהל פרויקט (קשה ביותר)</button>
+        <div class="credit">הכנה על ידי יעל זיו בעזרת ג'ובאני (ג'ימיני)</div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="screen-quiz" class="screen">
+        <h2 id="room-title">חדר 1</h2>
+        <div class="question-box" id="question-text">טוען חידה...</div>
+        <p id="help-note" style="text-align:center; font-size: 0.9em; opacity: 0.8; display: none;">ניתן לדייק עד 2 ספרות אחרי הנקודה</p>
+        <input type="number" id="answer-input" class="input-field" step="0.01" placeholder="התשובה כאן">
+        <div id="feedback" class="feedback"></div>
+        <button class="btn" onclick="checkAnswer()">בדיקה</button>
+    </div>
+
+    <!-- Digit Reveal Screen -->
+    <div id="screen-digit" class="screen">
+        <h2 style="color: var(--success)">הצלחתם!</h2>
+        <p style="text-align:center">הספרה של חדר זה:</p>
+        <div class="digit-reveal" id="digit-display">?</div>
+        <button class="btn" id="next-room-btn" onclick="nextRoom()">לחדר הבא</button>
+    </div>
+
+    <!-- Final Lock Screen -->
+    <div id="screen-final-lock" class="screen">
+        <h1>פריצת המערכת</h1>
+        <p style="text-align:center">הזינו את 6 הספרות (משמאל לימין):</p>
+        <div class="lock-container" id="final-code-inputs">
+            <input type="text" pattern="[0-9]*" maxlength="1" class="lock-input" inputmode="numeric">
+            <input type="text" pattern="[0-9]*" maxlength="1" class="lock-input" inputmode="numeric">
+            <input type="text" pattern="[0-9]*" maxlength="1" class="lock-input" inputmode="numeric">
+            <input type="text" pattern="[0-9]*" maxlength="1" class="lock-input" inputmode="numeric">
+            <input type="text" pattern="[0-9]*" maxlength="1" class="lock-input" inputmode="numeric">
+            <input type="text" pattern="[0-9]*" maxlength="1" class="lock-input" inputmode="numeric">
+        </div>
+        <button class="btn" onclick="verifyFinalCode()">נטרול נעילה</button>
+        <div id="lock-feedback" class="feedback"></div>
+    </div>
+
+    <!-- Finish Screen -->
+    <div id="screen-finish" class="screen">
+        <h1>המשימה הושלמה!</h1>
+        <p style="text-align:center">המעבדה נוטרלה בהצלחה.</p>
+        <div class="question-box">
+            <input type="text" id="student-name" class="input-field" placeholder="שם מלא">
+            <input type="text" id="student-class" class="input-field" placeholder="כיתה">
+        </div>
+        <p style="text-align:center; color: var(--error); font-weight: bold;">צלמו את המסך ושלחו למורה</p>
+        <button class="btn restart-btn" onclick="resetToWelcome()">שחקו שוב</button>
+    </div>
+</div>
+
+<script>
+    const randItem = (arr) => arr[Math.floor(Math.random() * arr.length)];
+    const randInt = (min, max) => Math.floor(Math.random() * (max - min + 1)) + min;
+
+    const templates = {
+        easy: [
+            { id: "e1", generate: () => { 
+                let t, p, a;
+                do {
+                    t = randItem([100, 200, 400, 500, 800, 1000]); 
+                    p = randItem([10, 20, 25, 30, 50, 75]); 
+                    a = (t * p) / 100;
+                } while (!Number.isInteger(a));
+                return { q: `במוזיאון ביקרו ${t} איש. ${p}% מהם מבוגרים. כמה מבוגרים ביקרו?`, a: a };
+            }},
+            { id: "e2", generate: () => { 
+                let t, p, a;
+                do {
+                    t = randItem([10, 20, 40, 50, 80]); 
+                    p = randItem([10, 20, 50, 80]); 
+                    a = (t * p) / 100;
+                } while (!Number.isInteger(a));
+                return { q: `במבחן היו ${t} שאלות. התלמיד ענה נכון על ${p}% מהן. כמה תשובות נכונות היו לו?`, a: a };
+            }},
+            { id: "e3", generate: () => { 
+                let t, p, part;
+                do {
+                    t = randItem([40, 60, 80, 100, 200, 400, 500]); 
+                    p = randItem([10, 20, 25, 50]); 
+                    part = (t * p) / 100;
+                } while (!Number.isInteger(part));
+                return { q: `בכיתה יש ${part} בנים המהווים ${p}% מכלל התלמידים. כמה תלמידים בכיתה?`, a: t };
+            }},
+            { id: "e4", generate: () => { 
+                let t, part, p;
+                do {
+                    t = randItem([20, 25, 40, 50, 100]); 
+                    part = randItem([2, 4, 5, 10, 20]); 
+                    p = (part / t) * 100;
+                } while (!Number.isInteger(p));
+                return { q: `בכד יש ${t} כדורים, מתוכם ${part} כחולים. מהו אחוז הכדורים הכחולים?`, a: p };
+            }},
+            { id: "e5", generate: () => { 
+                let base = randItem([100, 200, 300, 500, 1000]); 
+                let p = randItem([10, 20, 25, 50]); 
+                let a = base * (1 - p / 100);
+                return { q: `מוצר שעלה ${base} ש"ח הוזל ב-${p}%. מה מחירו החדש?`, a: a };
+            }},
+            { id: "e6", generate: () => { 
+                let t = randItem([1000, 2000, 5000]); 
+                let p = randItem([10, 20, 30, 50]); 
+                let a = (t * p) / 100;
+                return { q: `מתוך סכום של ${t} ש"ח, חולקו ${p}% לפרסים. מה שווי הפרסים בשקלים?`, a: a };
+            }}
+        ],
+        hard: [
+            { id: "h1", generate: () => {
+                // Word problem: Comparing two numbers
+                let n2, p, n1, s;
+                do {
+                    n2 = randInt(20, 60); 
+                    p = randItem([10, 25, 50]); 
+                    n1 = n2 * (1 + p / 100); 
+                    s = n1 + n2;
+                } while (!Number.isInteger(n1) || !Number.isInteger(s));
+                return { q: `מספר התלמידים בכיתה ח'1 גדול ב-${p}% ממספר התלמידים בכיתה ח'2. בשתי הכיתות יחד יש ${s} תלמידים. כמה תלמידים בכיתה ח'2?`, a: n2 };
+            }},
+            { id: "h2", generate: () => {
+                // Word problem: Shopping comparison
+                let priceB, p, priceA, total;
+                do {
+                    priceB = randInt(2, 10) * 10; 
+                    p = randItem([20, 30, 40]); 
+                    priceA = priceB * (1 + p / 100); 
+                    total = (1 * priceA) + (1 * priceB); 
+                } while (!Number.isInteger(priceA));
+                return { q: `מחיר ספר גדול ב-${p}% ממחיר מחשבון. יחד הם עולים ${total} ש"ח. מהו מחיר המחשבון?`, a: priceB };
+            }},
+            { id: "h3", generate: () => {
+                // Word problem: Budget split
+                let total = randItem([4000, 5000, 8000]); 
+                let p1 = 30; let p2 = 25; 
+                let v3 = total * (1 - (p1 + p2) / 100);
+                return { q: `סכום של ${total} ש"ח חולק בין 3 אנשים. הראשון קיבל ${p1}%, השני קיבל ${p2}% והשלישי קיבל את השאר. כמה שקלים קיבל השלישי?`, a: v3 };
+            }},
+            { id: "h4", generate: () => {
+                // Word problem: Initial price discovery
+                let base, p, final;
+                do {
+                    base = randInt(10, 40) * 10; 
+                    p = randItem([10, 20, 25]); 
+                    final = base * (1 + p / 100);
+                } while (!Number.isInteger(final));
+                return { q: `מחירו של תיק התייקר ב-${p}%. כעת הוא עולה ${final} ש"ח. מה היה מחירו המקורי?`, a: base };
+            }},
+            { id: "h5", generate: () => {
+                // Word problem: Difference observation
+                let x, diff, p;
+                do {
+                    x = randItem([400, 500, 1000, 2000]); 
+                    p = randItem([5, 10, 20]); 
+                    diff = (x * p) / 100;
+                } while (!Number.isInteger(diff));
+                return { q: `מספר המשתתפים בחוג השנה גדול ב-${p}% מהשנה שעברה. נודע כי השנה נוספו ${diff} משתתפים. כמה משתתפים היו בשנה שעברה?`, a: x };
+            }},
+            { id: "h6", generate: () => {
+                // Word problem: Remainder
+                let t, p1, rem;
+                do {
+                    t = randItem([200, 400, 500, 800]); 
+                    p1 = randItem([25, 40, 60]); 
+                    rem = t * (1 - p1 / 100);
+                } while (!Number.isInteger(rem));
+                return { q: `בספרייה נשאלו ${p1}% מהספרים. נותרו על המדפים ${rem} ספרים. כמה ספרים יש בספרייה בסך הכל?`, a: t };
+            }}
+        ],
+        expert: [
+            { id: "ex1", generate: () => {
+                let b = randItem([200, 400, 500, 1000]); let p1 = randItem([10, 15, 20]); let p2 = randItem([10, 20]);
+                let mid = b * (1 + p1/100); let fin = mid * (1 + p2/100);
+                return { q: `מוצר שעלה ${b} ש"ח התייקר ב-${p1}%. לאחר חודש התייקר שוב ב-${p2}% מהמחיר החדש. מה מחירו הסופי?`, a: Number(fin.toFixed(2)) };
+            }},
+            { id: "ex2", generate: () => {
+                let b = randItem([500, 1000, 2000]); let p1 = 20; let p2 = 10;
+                let mid = b * (1 - p1/100); let fin = mid * (1 - p2/100);
+                return { q: `מחירו של מחשב הוא ${b} ש"ח. הוא הוזל ב-${p1}% ובמכירת חיסול הוזל שוב ב-${p2}% מהמחיר המוזל. מה מחירו כעת?`, a: Number(fin.toFixed(2)) };
+            }},
+            { id: "ex3", generate: () => {
+                let b = randItem([1000, 2000]); let p1 = 20; let p2 = 20;
+                let fin = b * (1 + p1/100) * (1 - p2/100);
+                return { q: `מניה עלתה ב-${p1}% וביום למחרת ירדה ב-${p2}% מערכה החדש. אם מחירה ההתחלתי היה ${b}, מה מחירה בסוף היומיים?`, a: Number(fin.toFixed(2)) };
+            }},
+            { id: "ex4", generate: () => {
+                let p1 = 25; let p2 = 20; 
+                let total_p = ((1 + p1/100) * (1 + p2/100) - 1) * 100;
+                return { q: `מחיר מוצר עלה ב-${p1}% ולאחר מכן עלה שוב ב-${p2}%. מהו אחוז העלייה הכולל מהמחיר המקורי?`, a: Number(total_p.toFixed(2)) };
+            }},
+            { id: "ex5", generate: () => {
+                let b = randItem([400, 600, 800]); let p1 = 15; let p2 = 15;
+                let fin = b * (1 + p1/100) * (1 + p2/100);
+                return { q: `שכר של ${b} ש"ח הועלה פעמיים ב-${p1}% בכל פעם. מה השכר הסופי? (עגלו ל-2 ספרות)`, a: Number(fin.toFixed(2)) };
+            }},
+            { id: "ex6", generate: () => {
+                let b = randItem([200, 300, 500]); let p1 = 10; let p2 = 50;
+                let fin = b * (1 - p1/100) * (1 + p2/100);
+                return { q: `מחיר שמלה היה ${b} ש"ח. היא הוזלה ב-${p1}% ולאחר מכן התייקרה ב-${p2}% מהמחיר המוזל. מה מחירה הסופי?`, a: Number(fin.toFixed(2)) };
+            }}
+        ]
+    };
+
+    let gameQuestions = [];
+    let currentIdx = 0;
+    let score = 0;
+    let sessionCode = [];
+    let currentLevel = 'easy';
+
+    function startGame(level) {
+        currentLevel = level;
+        currentIdx = 0;
+        score = 0;
+        document.getElementById('score-display').innerText = "0";
+        document.getElementById('help-note').style.display = (level === 'expert') ? 'block' : 'none';
+
+        let availableTemplates = [...templates[level]];
+        // Shuffle questions
+        for (let i = availableTemplates.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [availableTemplates[i], availableTemplates[j]] = [availableTemplates[j], availableTemplates[i]];
+        }
+
+        gameQuestions = availableTemplates.slice(0, 6).map(t => t.generate());
+        sessionCode = [];
+        for(let i=0; i<6; i++) sessionCode.push(Math.floor(Math.random() * 10));
+        
+        showScreen('screen-quiz');
+        updateQuiz();
+    }
+
+    function updateQuiz() {
+        const qData = gameQuestions[currentIdx];
+        document.getElementById('question-text').innerText = qData.q;
+        document.getElementById('room-title').innerText = `חדר ${currentIdx + 1}`;
+        document.getElementById('room-display').innerText = currentIdx + 1;
+        document.getElementById('answer-input').value = '';
+        document.getElementById('feedback').innerText = '';
+        updateProgress();
+    }
+
+    function checkAnswer() {
+        const val = document.getElementById('answer-input').value;
+        if (val === "") return;
+        const correct = gameQuestions[currentIdx].a;
+        
+        if (Math.abs(parseFloat(val) - correct) < 0.011) {
+            score += 10;
+            document.getElementById('score-display').innerText = score;
+            document.getElementById('feedback').style.color = 'var(--success)';
+            document.getElementById('feedback').innerText = 'מדהים! פצחתם את החידה.';
+            setTimeout(revealDigit, 600);
+        } else {
+            document.getElementById('feedback').style.color = 'var(--error)';
+            document.getElementById('feedback').innerText = 'טעות בחישוב. נסו שוב.';
+        }
+    }
+
+    function revealDigit() {
+        document.getElementById('digit-display').innerText = sessionCode[currentIdx];
+        document.getElementById('next-room-btn').innerText = (currentIdx === 5) ? "לפריצת המנעול הסופי" : "לחדר הבא";
+        showScreen('screen-digit');
+    }
+
+    function nextRoom() {
+        currentIdx++;
+        if (currentIdx >= 6) {
+            document.querySelectorAll('.lock-input').forEach(i => i.value = "");
+            showScreen('screen-final-lock');
+        } else {
+            showScreen('screen-quiz');
+            updateQuiz();
+        }
+    }
+
+    function updateProgress() {
+        document.getElementById('progress-fill').style.width = (currentIdx / 6 * 100) + '%';
+    }
+
+    function showScreen(id) {
+        document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+        document.getElementById(id).classList.add('active');
+    }
+
+    function verifyFinalCode() {
+        const inputs = document.querySelectorAll('.lock-input');
+        let entered = "";
+        inputs.forEach(i => entered += i.value.trim());
+        if (entered === sessionCode.join('')) {
+            showScreen('screen-finish');
+        } else {
+            const f = document.getElementById('lock-feedback');
+            f.style.color = 'var(--error)';
+            f.innerText = 'קוד שגוי. ודאו שהזנתם את הספרות הנכונות.';
+        }
+    }
+
+    function resetToWelcome() {
+        showScreen('screen-welcome');
+        document.getElementById('progress-fill').style.width = '0%';
+        document.getElementById('score-display').innerText = "0";
+        document.getElementById('room-display').innerText = "1";
+    }
+
+    // Input management for the final lock
+    document.querySelectorAll('.lock-input').forEach((input, idx, inputs) => {
+        input.addEventListener('input', () => {
+            if (input.value.length >= 1) {
+                input.value = input.value[0];
+                if (idx < inputs.length - 1) inputs[idx + 1].focus();
+            }
+        });
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Backspace' && input.value === '' && idx > 0) inputs[idx - 1].focus();
+        });
+    });
+</script>
+</body>
+</html>

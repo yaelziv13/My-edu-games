@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משימה: מאדים - חדר בריחה מתמטי</title>
+    <style>
+        :root {
+            --space-bg: #050b1a;
+            --neon-blue: #00f2ff;
+            --neon-orange: #ff9d00;
+            --text-light: #e0e0e0;
+            --success: #39ff14;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--space-bg);
+            color: var(--text-light);
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 10px;
+        }
+
+        #stars-container {
+            position: fixed;
+            top: 0; left: 0;
+            width: 100%; height: 100%;
+            z-index: -1;
+            background: radial-gradient(ellipse at bottom, #1B2735 0%, #090A0F 100%);
+        }
+
+        .star {
+            position: absolute;
+            background: white;
+            border-radius: 50%;
+            opacity: 0.5;
+            animation: twinkle var(--duration) infinite;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0.3; }
+            50% { opacity: 1; }
+        }
+
+        .game-container {
+            width: 100%;
+            max-width: 600px;
+            background: rgba(16, 25, 45, 0.95);
+            border: 2px solid var(--neon-blue);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: 0 0 25px rgba(0, 242, 255, 0.3);
+            text-align: center;
+            position: relative;
+            box-sizing: border-box;
+        }
+
+        h1 { 
+            color: var(--neon-blue); 
+            text-shadow: 0 0 10px var(--neon-blue);
+            font-size: 1.8rem;
+        }
+
+        .screen { display: none; }
+        .screen.active { display: block; animation: fadeIn 0.5s ease; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .btn {
+            background: transparent;
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            padding: 12px 20px;
+            font-size: 1.1rem;
+            cursor: pointer;
+            border-radius: 10px;
+            margin: 8px;
+            transition: 0.3s;
+            font-weight: bold;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .btn:hover, .btn:active {
+            background: var(--neon-blue);
+            color: var(--space-bg);
+            box-shadow: 0 0 15px var(--neon-blue);
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            max-width: 250px;
+            margin: 12px auto;
+        }
+
+        .status-bar {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 15px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 8px;
+            background: #222;
+            border-radius: 4px;
+            margin: 15px 0;
+            overflow: hidden;
+        }
+
+        .progress-bar {
+            height: 100%;
+            background: var(--neon-orange);
+            width: 0%;
+            transition: 0.5s;
+        }
+
+        .exercise {
+            font-size: 2.2rem;
+            margin: 20px 0;
+            letter-spacing: 2px;
+            direction: ltr;
+            font-weight: bold;
+        }
+
+        .ship-track {
+            position: relative;
+            height: 50px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 25px;
+            margin: 15px 0;
+            display: flex;
+            align-items: center;
+            overflow: hidden;
+        }
+
+        #ship {
+            position: absolute;
+            font-size: 24px;
+            transition: left 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            left: 0;
+            z-index: 2;
+        }
+
+        #target {
+            position: absolute;
+            right: 10px;
+            font-size: 24px;
+        }
+
+        .certificate {
+            background: linear-gradient(135deg, #1a2a4a 0%, #0a1020 100%);
+            border: 3px double var(--neon-blue);
+            padding: 25px;
+            border-radius: 15px;
+            margin: 20px 0;
+            position: relative;
+            box-shadow: 0 0 20px rgba(0,242,255,0.2);
+        }
+
+        .input-field {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid var(--neon-blue);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+            width: 80%;
+            font-size: 1rem;
+            text-align: center;
+        }
+
+        .hint-box {
+            background: rgba(255, 157, 0, 0.15);
+            border: 1px dashed var(--neon-orange);
+            padding: 12px;
+            margin-top: 15px;
+            border-radius: 10px;
+            display: none;
+            font-size: 0.95rem;
+        }
+
+        .credits {
+            margin-top: 30px;
+            font-size: 0.8rem;
+            color: #888;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            padding-top: 10px;
+        }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.5rem; }
+            .exercise { font-size: 1.6rem; }
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+    </style>
+</head>
+<body>
+
+<div id="stars-container"></div>
+
+<div class="game-container">
+    <!-- מסך פתיחה -->
+    <div id="start-screen" class="screen active">
+        <h1>🚀 משימה: מאדים</h1>
+        <p>אסטרונאוטים, המשימה בסכנה! פתרו 7 תרגילי ניווט כדי לנחות בבטחה.</p>
+        <div style="margin: 20px 0;">
+            <button class="btn" onclick="startGame(1)">רמה 1: מתחילים</button>
+            <button class="btn" onclick="startGame(2)">רמה 2: מפקדים</button>
+        </div>
+        <div class="credits">
+            הכנה: יעל זיו בעזרת ג'ובאני (Gemini)
+        </div>
+    </div>
+
+    <!-- מסך משחק -->
+    <div id="game-screen" class="screen">
+        <div class="status-bar">
+            <div id="level-indicator">שלב: 1/7</div>
+            <div id="score-indicator">כוכבים: 0</div>
+        </div>
+        
+        <div class="ship-track">
+            <div id="ship">🚀</div>
+            <div id="target">🔴</div>
+        </div>
+
+        <div class="progress-container">
+            <div id="progress-bar" class="progress-bar"></div>
+        </div>
+
+        <div id="question-container">
+            <p style="font-size: 0.9rem; margin-bottom: 5px;">מהי התוצאה הנכונה?</p>
+            <div class="exercise" id="current-exercise">...</div>
+            <div id="options-grid"></div>
+        </div>
+
+        <div id="feedback" style="height: 24px; margin: 10px 0;"></div>
+
+        <button class="btn" style="font-size: 0.85rem; border-color: var(--neon-orange); color: var(--neon-orange);" onclick="toggleHint()">💡 עזרה מהבסיס</button>
+        <div id="hint-text" class="hint-box">
+            <strong>כללי הניווט:</strong><br>
+            1. קודם כל סוגריים ( ) | 2. כפל וחילוק | 3. חיבור וחיסור
+        </div>
+    </div>
+
+    <!-- מסך הזנת פרטים -->
+    <div id="name-screen" class="screen">
+        <h1>נחיתה מוצלחת! 🚩</h1>
+        <p>הגעתם למאדים. הכינו את כרטיס האסטרונאוט שלכם:</p>
+        <input type="text" id="user-name" class="input-field" placeholder="שם מלא"><br>
+        <input type="text" id="user-class" class="input-field" placeholder="כיתה"><br>
+        <button class="btn" onclick="showCertificate()">הנפקת כרטיס טיסה</button>
+    </div>
+
+    <!-- מסך תעודה סופית -->
+    <div id="end-screen" class="screen">
+        <div class="certificate" id="cert-area">
+            <h2 style="color: var(--neon-blue); margin-top: 0;">משימה: מאדים</h2>
+            <p style="font-size: 1.2rem; margin: 5px 0;">אישור נחיתה עבור:</p>
+            <div id="display-name" style="font-size: 1.5rem; font-weight: bold; color: var(--success);"></div>
+            <div id="display-class" style="margin-bottom: 15px;"></div>
+            <hr style="border: 0; border-top: 1px solid #333;">
+            <p style="margin: 10px 0;">ציון ניווט סופי:</p>
+            <div id="display-score" style="font-size: 2rem; color: var(--neon-orange);"></div>
+            <p style="font-size: 0.8rem; margin-top: 15px; color: #888;">קוד אישור: MARS-OK-2024</p>
+        </div>
+        <p style="color: var(--neon-orange); font-weight: bold; animation: pulse 1.5s infinite;">📸 צלמו את המסך ושלחו למורה!</p>
+        <button class="btn" onclick="location.reload()">טיסה חדשה 🔄</button>
+    </div>
+</div>
+
+<script>
+    let currentLevel = 1;
+    const totalLevels = 7;
+    let score = 0;
+    let selectedDifficulty = 1;
+    let currentAnswer = 0;
+
+    function createStars() {
+        const container = document.getElementById('stars-container');
+        for (let i = 0; i < 80; i++) {
+            const star = document.createElement('div');
+            star.className = 'star';
+            const size = Math.random() * 2 + 1 + 'px';
+            star.style.width = size; star.style.height = size;
+            star.style.top = Math.random() * 100 + '%';
+            star.style.left = Math.random() * 100 + '%';
+            star.style.setProperty('--duration', Math.random() * 3 + 2 + 's');
+            container.appendChild(star);
+        }
+    }
+
+    function getRandom(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+    function generateExercise(levelNum, difficulty) {
+        let a, b, c, text, ans;
+        const range = difficulty === 1 ? [2, 12] : [15, 60];
+        const smallRange = difficulty === 1 ? [2, 6] : [5, 12];
+
+        switch(levelNum) {
+            case 1: a = getRandom(range[0], range[1]); b = getRandom(range[0], range[1]); c = getRandom(1, 10); text = `${a} + ${b} - ${c}`; ans = a + b - c; break;
+            case 2: a = getRandom(2, 5); b = getRandom(2, 6); c = getRandom(range[0], range[1]); text = `${c} + ${a} × ${b}`; ans = c + (a * b); break;
+            case 3: a = getRandom(smallRange[0], smallRange[1]); b = getRandom(2, 5); c = getRandom(2, 5); text = `(${a} + ${b}) × ${c}`; ans = (a + b) * c; break;
+            case 4: b = getRandom(2, 6); ans = getRandom(2, 10); let prod = b * ans; a = getRandom(range[0], range[1]); text = `${prod} ÷ ${b} + ${a}`; ans = ans + a; break;
+            case 5: a = getRandom(range[0], range[1]); b = getRandom(2, 5); c = getRandom(2, 5); text = `${a} - (${b} × ${c})`; ans = a - (b * c); if (ans < 0) return generateExercise(levelNum, difficulty); break;
+            case 6: a = getRandom(2, 5); b = getRandom(2, 5); c = getRandom(range[0], range[1]); text = `${a} × ${b} + ${c}`; ans = (a * b) + c; break;
+            case 7: a = getRandom(2, 4); b = getRandom(3, 5); c = getRandom(2, 4); d = getRandom(2, 4); text = `(${a} + ${b}) × (${c} + ${d})`; ans = (a + b) * (c + d); break;
+        }
+        return { text, ans };
+    }
+
+    function startGame(diff) {
+        selectedDifficulty = diff;
+        document.getElementById('start-screen').classList.remove('active');
+        document.getElementById('game-screen').classList.add('active');
+        loadLevel();
+    }
+
+    function loadLevel() {
+        const ex = generateExercise(currentLevel, selectedDifficulty);
+        document.getElementById('current-exercise').innerText = ex.text;
+        currentAnswer = ex.ans;
+        document.getElementById('level-indicator').innerText = `שלב: ${currentLevel}/${totalLevels}`;
+        document.getElementById('feedback').innerText = "";
+        document.getElementById('hint-text').style.display = "none";
+
+        const options = [currentAnswer];
+        while(options.length < 3) {
+            let fake = currentAnswer + getRandom(-5, 5);
+            if (fake !== currentAnswer && fake > 0 && !options.includes(fake)) options.push(fake);
+        }
+        options.sort(() => Math.random() - 0.5);
+
+        const grid = document.getElementById('options-grid');
+        grid.innerHTML = '';
+        options.forEach(opt => {
+            const btn = document.createElement('button');
+            btn.className = 'btn option-btn';
+            btn.innerText = opt;
+            btn.onclick = () => checkAnswer(opt);
+            grid.appendChild(btn);
+        });
+        updateProgress();
+    }
+
+    function checkAnswer(selected) {
+        const fb = document.getElementById('feedback');
+        if (selected === currentAnswer) {
+            fb.style.color = "var(--success)";
+            fb.innerText = "קוד תקין! 🚀";
+            score += 10;
+            document.getElementById('score-indicator').innerText = `כוכבים: ${score}`;
+            document.querySelectorAll('.option-btn').forEach(b => b.disabled = true);
+            setTimeout(() => {
+                currentLevel++;
+                if (currentLevel > totalLevels) { showNameScreen(); } else { loadLevel(); }
+            }, 1000);
+        } else {
+            fb.style.color = "#ff4d4d";
+            fb.innerText = "טעות בחישוב, נסו שוב";
+        }
+    }
+
+    function updateProgress() {
+        const p = ((currentLevel - 1) / totalLevels) * 100;
+        document.getElementById('progress-bar').style.width = p + '%';
+        document.getElementById('ship').style.left = `calc(${p}% - 25px)`;
+    }
+
+    function toggleHint() {
+        const h = document.getElementById('hint-text');
+        h.style.display = h.style.display === 'none' ? 'block' : 'none';
+    }
+
+    function showNameScreen() {
+        document.getElementById('game-screen').classList.remove('active');
+        document.getElementById('name-screen').classList.add('active');
+    }
+
+    function showCertificate() {
+        const name = document.getElementById('user-name').value;
+        const cls = document.getElementById('user-class').value;
+        if (!name) { alert("אנא הזינו שם"); return; }
+        document.getElementById('display-name').innerText = name;
+        document.getElementById('display-class').innerText = cls || "";
+        document.getElementById('display-score').innerText = score + " כוכבים";
+        document.getElementById('name-screen').classList.remove('active');
+        document.getElementById('end-screen').classList.add('active');
+    }
+
+    window.onload = createStars;
+</script>
+
+</body>
+</html>
